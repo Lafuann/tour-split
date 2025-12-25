@@ -21,16 +21,18 @@ interface ExpenseFormProps {
   onAdd: (expense: Omit<Expense, "id">) => void;
 }
 
+const defaultDateTime = () => {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now.getTime() - offset).toISOString().slice(0, 16);
+};
+
 export function ExpenseForm({ participants, onAdd }: ExpenseFormProps) {
   const { toast } = useToast();
   const [location, setLocation] = useState("");
   const [paidById, setPaidById] = useState("");
   const [amount, setAmount] = useState("");
-  const [datetime, setDatetime] = useState(() => {
-    const now = new Date();
-    const offset = now.getTimezoneOffset() * 60000;
-    return new Date(now.getTime() - offset).toISOString().slice(0, 16);
-  });
+  const [datetime, setDatetime] = useState(defaultDateTime);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +66,8 @@ export function ExpenseForm({ participants, onAdd }: ExpenseFormProps) {
     // Reset form
     setLocation("");
     setAmount("");
+    setPaidById("");
+    setDatetime(defaultDateTime);
 
     toast({
       title: "Berhasil!",

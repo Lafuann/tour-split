@@ -40,11 +40,12 @@ export function CalculatorInput({
       }
     } catch {
       // silently fail (UX lebih halus)
+    } finally {
+      setExpression("");
     }
   };
 
-  const append = (val: string) =>
-    setExpression((prev) => prev + val);
+  const append = (val: string) => setExpression((prev) => prev + val);
 
   return (
     <div className="relative">
@@ -131,12 +132,7 @@ function CalcBtn({
   onClick: () => void;
 }) {
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      onClick={onClick}
-    >
+    <Button type="button" variant="outline" size="sm" onClick={onClick}>
       {children}
     </Button>
   );
