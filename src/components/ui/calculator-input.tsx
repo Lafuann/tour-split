@@ -38,8 +38,6 @@ export function CalculatorInput({
       if (typeof result === "number" && result > 0) {
         onChange(Math.round(result).toString());
       }
-    } catch {
-      // silently fail (UX lebih halus)
     } finally {
       setExpression("");
     }

@@ -14,35 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
-      expenses: {
+      expense_shares: {
         Row: {
           amount: number
           created_at: string
-          datetime: string
-          description: string | null
+          expense_id: string
           id: string
-          location: string
-          paid_by_id: string
-          trip_id: string
+          participant_id: string
         }
         Insert: {
           amount: number
           created_at?: string
-          datetime?: string
-          description?: string | null
+          expense_id: string
           id?: string
-          location: string
-          paid_by_id: string
-          trip_id: string
+          participant_id: string
         }
         Update: {
           amount?: number
           created_at?: string
-          datetime?: string
+          expense_id?: string
+          id?: string
+          participant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expense_shares_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_shares_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expenses: {
+        Row: {
+          created_at: string
+          date_time: string
+          description: string | null
+          id: string
+          location: string
+          paid_by_id: string
+          total_amount: number
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_time: string
+          description?: string | null
+          id?: string
+          location: string
+          paid_by_id: string
+          total_amount: number
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          date_time?: string
           description?: string | null
           id?: string
           location?: string
           paid_by_id?: string
+          total_amount?: number
           trip_id?: string
         }
         Relationships: [
@@ -64,29 +103,51 @@ export type Database = {
       }
       participants: {
         Row: {
-          color: string
           created_at: string
           id: string
           name: string
-          trip_id: string
         }
         Insert: {
-          color?: string
           created_at?: string
           id?: string
           name: string
-          trip_id: string
         }
         Update: {
-          color?: string
           created_at?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      trip_participants: {
+        Row: {
+          created_at: string
+          id: string
+          participant_id: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          participant_id: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          participant_id?: string
           trip_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "participants_trip_id_fkey"
+            foreignKeyName: "trip_participants_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "participants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_participants_trip_id_fkey"
             columns: ["trip_id"]
             isOneToOne: false
             referencedRelation: "trips"
@@ -98,23 +159,26 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          end_date: string | null
           id: string
           name: string
-          updated_at: string
+          start_date: string
         }
         Insert: {
           created_at?: string
           description?: string | null
+          end_date?: string | null
           id?: string
           name: string
-          updated_at?: string
+          start_date: string
         }
         Update: {
           created_at?: string
           description?: string | null
+          end_date?: string | null
           id?: string
           name?: string
-          updated_at?: string
+          start_date?: string
         }
         Relationships: []
       }
