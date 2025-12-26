@@ -141,7 +141,27 @@ export const ExpenseTable = ({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="inline-flex items-center rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-white">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium text-white ${
+                          getParticipantName(
+                            expense.paidById
+                          )?.toLocaleLowerCase() === "naufal"
+                            ? "bg-teal-500"
+                            : getParticipantName(
+                                expense.paidById
+                              )?.toLocaleLowerCase() === "farhan"
+                            ? "bg-red-500"
+                            : getParticipantName(
+                                expense.paidById
+                              )?.toLocaleLowerCase() === "hasan"
+                            ? "bg-gray-500"
+                            : getParticipantName(
+                                expense.paidById
+                              )?.toLocaleLowerCase() === "rizki"
+                            ? "bg-green-500"
+                            : "bg-primary"
+                        } `}
+                      >
                         {getParticipantName(expense.paidById)}
                       </span>
                     </TableCell>
