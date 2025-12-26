@@ -1,4 +1,4 @@
-import { Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,12 +33,14 @@ interface ExpenseTableProps {
   expenses: Expense[];
   participants: Participant[];
   onDelete: (id: string) => void;
+  onEdit: (expense: Expense) => void;
 }
 
 export const ExpenseTable = ({
   expenses,
   participants,
   onDelete,
+  onEdit,
 }: ExpenseTableProps) => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -179,7 +181,15 @@ export const ExpenseTable = ({
                     <TableCell className="text-right font-semibold">
                       {formatCurrency(expense.totalAmount)}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="flex flex-row gap-1 items-center">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-yellow-500/10"
+                        onClick={() => onEdit(expense)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button

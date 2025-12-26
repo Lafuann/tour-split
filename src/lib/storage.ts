@@ -318,6 +318,7 @@ export const updateExpense = async (
   id: string,
   updates: Partial<Expense>
 ): Promise<boolean> => {
+  // 1. Update expense utama
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updateData: any = {};
   if (updates.location) updateData.location = updates.location;
@@ -327,14 +328,42 @@ export const updateExpense = async (
   if (updates.paidById) updateData.paid_by_id = updates.paidById;
   if (updates.dateTime) updateData.date_time = updates.dateTime.toISOString();
 
-  const { error } = await supabase
+  const { error: expenseError } = await supabase
     .from("expenses")
     .update(updateData)
     .eq("id", id);
 
-  if (error) {
-    console.error("Error updating expense:", error);
+  if (expenseError) {
+    console.error("Error updating expense:", expenseError);
     return false;
+  }
+
+  // 2. Update expense_shares (jika ada)
+  if (updates.participantShares) {
+    // hapus shares lama
+    const { error: deleteError } = await supabase
+      .from("expense_shares")
+      .delete()
+      .eq("expense_id", id);
+
+    if (deleteError) {
+      console.error("Error deleting expense shares:", deleteError);
+      return false;
+    }
+
+    // insert shares baru
+    const { error: insertError } = await supabase.from("expense_shares").insert(
+      updates.participantShares.map((share) => ({
+        expense_id: id,
+        participant_id: share.participantId,
+        amount: share.amount,
+      }))
+    );
+
+    if (insertError) {
+      console.error("Error inserting expense shares:", insertError);
+      return false;
+    }
   }
 
   return true;

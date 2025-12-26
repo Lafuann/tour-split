@@ -92,6 +92,30 @@ export const SettlementCard = ({
         </Card>
       </div>
 
+      {/* Total Pengeluaran Per Orang */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">
+            Total Pengeluaran Per Orang
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {balances.map((balance) => (
+              <div
+                key={balance.participantId}
+                className="flex items-center justify-between rounded-lg border p-3"
+              >
+                <p className="font-medium">{balance.name}</p>
+                <p className="font-semibold">
+                  {formatCurrency(balance.totalPaid)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Balance Details */}
       <Card>
         <CardHeader>

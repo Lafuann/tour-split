@@ -16,6 +16,7 @@ import {
   getExpensesByTrip,
   addExpense,
   deleteExpense,
+  updateExpense,
 } from "@/lib/storage";
 import { calculateBalances, calculateSettlements } from "@/lib/calculations";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ const TripDetail = () => {
   const [tripParticipants, setTripParticipants] = useState<Participant[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   useEffect(() => {
     if (tripId) {
@@ -58,10 +60,11 @@ const TripDetail = () => {
     setLoading(false);
   };
 
-  const handleAddExpense = async (
-    expense: Omit<Expense, "id" | "createdAt">
-  ) => {
-    const newExpense = await addExpense(expense);
+  const handleAddExpense = async (data: {
+    id?: string;
+    expense: Omit<Expense, "id" | "createdAt">;
+  }) => {
+    const newExpense = await addExpense(data.expense);
     if (newExpense) {
       setExpenses((prev) =>
         [...prev, newExpense].sort(
@@ -82,6 +85,31 @@ const TripDetail = () => {
     } else {
       toast.error("Gagal menghapus pengeluaran");
     }
+  };
+
+  const handleUpdateExpense = async ({
+    id,
+    expense,
+  }: {
+    id?: string;
+    expense: Omit<Expense, "id" | "createdAt">;
+  }) => {
+    if (!id) {
+      console.error("Expense ID is missing");
+      return;
+    }
+
+    const success = await updateExpense(id, expense);
+
+    if (!success) {
+      toast.error("Gagal mengupdate pengeluaran");
+      return;
+    }
+
+    toast.success("Pengeluaran berhasil diperbarui");
+
+    // reload data / refetch
+    loadData();
   };
 
   if (loading) {
@@ -158,6 +186,18 @@ const TripDetail = () => {
                 participants={tripParticipants}
                 onSubmit={handleAddExpense}
               />
+
+              {editingExpense && (
+                <ExpenseForm
+                  mode="edit"
+                  tripId={tripId}
+                  participants={allParticipants}
+                  initialData={editingExpense}
+                  open={!!editingExpense}
+                  onOpenChange={(o) => !o && setEditingExpense(null)}
+                  onSubmit={handleUpdateExpense}
+                />
+              )}
             </div>
 
             {/* Tabs */}
@@ -175,6 +215,7 @@ const TripDetail = () => {
                     expenses={expenses}
                     participants={tripParticipants}
                     onDelete={handleDeleteExpense}
+                    onEdit={setEditingExpense}
                   />
                 </TabsContent>
 

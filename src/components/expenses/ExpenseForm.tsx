@@ -33,15 +33,31 @@ import { CalculatorInput } from "../ui/calculator-input";
 interface ExpenseFormProps {
   tripId: string;
   participants: Participant[];
-  onSubmit: (expense: Omit<Expense, "id" | "createdAt">) => Promise<void>;
+  onSubmit: (data: {
+    id?: string;
+    expense: Omit<Expense, "id" | "createdAt">;
+  }) => Promise<void>;
+
+  mode?: "create" | "edit";
+  initialData?: Expense;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const ExpenseForm = ({
   tripId,
   participants,
   onSubmit,
+  mode = "create",
+  initialData,
+  open: controlledOpen,
+  onOpenChange,
 }: ExpenseFormProps) => {
   const [open, setOpen] = useState(false);
+  console.log("initialData", initialData);
+
+  const isOpen = controlledOpen ?? open;
+  const setIsOpen = onOpenChange ?? setOpen;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [location, setLocation] = useState("");
   const [description, setDescription] = useState("");
@@ -52,14 +68,45 @@ export const ExpenseForm = ({
   const [isEqualSplit, setIsEqualSplit] = useState(true);
   const [shares, setShares] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (mode === "edit" && initialData && isOpen) {
+      setLocation(initialData.location);
+      setDescription(initialData.description || "");
+      setTotalAmount(String(initialData.totalAmount));
+      setPaidById(initialData.paidById);
+      setDate(new Date(initialData.dateTime));
+
+      const hasUnequalShares = initialData.participantShares.some(
+        (s, _, arr) => s.amount !== arr[0].amount
+      );
+
+      setIsEqualSplit(hasUnequalShares ? false : true);
+
+      const mappedShares: Record<string, string> = {};
+      initialData.participantShares.forEach((s) => {
+        mappedShares[s.participantId] = String(s.amount);
+      });
+
+      participants.forEach((p) => {
+        if (!mappedShares[p.id]) mappedShares[p.id] = "0";
+      });
+
+      setShares(mappedShares);
+    }
+  }, [mode, initialData, isOpen, participants]);
+
+  console.log("shares", shares);
+
   // Initialize shares when participants change or form opens
   useEffect(() => {
-    const initialShares: Record<string, string> = {};
-    participants.forEach((p) => {
-      initialShares[p.id] = "";
-    });
-    setShares(initialShares);
-  }, [participants]);
+    if (mode === "create") {
+      const initialShares: Record<string, string> = {};
+      participants.forEach((p) => {
+        initialShares[p.id] = "";
+      });
+      setShares(initialShares);
+    }
+  }, [mode, participants]);
 
   // Update shares when total amount or split mode changes
   useEffect(() => {
@@ -123,31 +170,35 @@ export const ExpenseForm = ({
     try {
       setIsSubmitting(true);
       await onSubmit({
-        tripId,
-        location: location.trim(),
-        description: description.trim() || undefined,
-        totalAmount: total,
-        paidById,
-        participantShares,
-        dateTime,
+        id: initialData?.id,
+        expense: {
+          tripId,
+          location: location.trim(),
+          description: description.trim() || undefined,
+          totalAmount: total,
+          paidById,
+          participantShares,
+          dateTime,
+        },
       });
     } catch (error) {
       toast.error("Terjadi kesalahan. Coba lagi.");
     } finally {
-      // Reset form
-      setLocation("");
-      setDescription("");
-      setTotalAmount("");
-      setPaidById("");
-      setDate(new Date());
-      setTime(format(new Date(), "HH:mm"));
-      setIsEqualSplit(true);
-      const resetShares: Record<string, string> = {};
-      participants.forEach((p) => {
-        resetShares[p.id] = "";
-      });
-      setShares(resetShares);
-      setOpen(false);
+      if (mode === "create") {
+        setLocation("");
+        setDescription("");
+        setTotalAmount("");
+        setPaidById("");
+        setDate(new Date());
+        setTime(format(new Date(), "HH:mm"));
+        setIsEqualSplit(true);
+
+        const resetShares: Record<string, string> = {};
+        participants.forEach((p) => (resetShares[p.id] = ""));
+        setShares(resetShares);
+      }
+
+      setIsOpen(false);
       setIsSubmitting(false);
     }
   };
@@ -157,16 +208,20 @@ export const ExpenseForm = ({
   const difference = total - sharesTotal;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Tambah Pengeluaran
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      {mode === "create" && (
+        <DialogTrigger asChild>
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Tambah Pengeluaran
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Tambah Pengeluaran</DialogTitle>
+          <DialogTitle>
+            {mode === "edit" ? "Edit Pengeluaran" : "Tambah Pengeluaran"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
