@@ -95,6 +95,7 @@ export const ExpenseTable = ({
             <TableHead>Waktu</TableHead>
             <TableHead>Judul</TableHead>
             <TableHead>Dibayar oleh</TableHead>
+            <TableHead>Pembagian</TableHead>
             <TableHead className="text-right">Total</TableHead>
             <TableHead className="w-16"></TableHead>
           </TableRow>
@@ -144,15 +145,19 @@ export const ExpenseTable = ({
                         {getParticipantName(expense.paidById)}
                       </span>
                     </TableCell>
+                    <TableCell>
+                      <span
+                        className={`text-sm font-normal px-2 py-0.5 rounded-full ${
+                          hasUnequalShares
+                            ? "text-white bg-purple-600"
+                            : "text-white bg-muted-foreground/50"
+                        }`}
+                      >
+                        {hasUnequalShares ? "Pembagian Fleksibel" : "Sama Rata"}
+                      </span>
+                    </TableCell>
                     <TableCell className="text-right font-semibold">
-                      <div className="flex items-center justify-end gap-2">
-                        {hasUnequalShares && (
-                          <span className="text-xs text-warning font-normal">
-                            ≠
-                          </span>
-                        )}
-                        {formatCurrency(expense.totalAmount)}
-                      </div>
+                      {formatCurrency(expense.totalAmount)}
                     </TableCell>
                     <TableCell>
                       <AlertDialog>
@@ -167,9 +172,12 @@ export const ExpenseTable = ({
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Hapus Pengeluaran?</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              Hapus Pengeluaran?
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Yakin ingin menghapus pengeluaran di "{expense.location}"?
+                              Yakin ingin menghapus pengeluaran di "
+                              {expense.location}"?
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
