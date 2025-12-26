@@ -22,6 +22,7 @@ import {
 import { Participant, Trip } from "@/types";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { normalizeDate } from "@/lib/helpers";
 
 interface TripFormProps {
   participants: Participant[];
@@ -35,7 +36,9 @@ export const TripForm = ({ participants, onSubmit }: TripFormProps) => {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>();
-  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>(
+    []
+  );
 
   const handleSubmit = async () => {
     if (!name.trim()) {
@@ -55,8 +58,8 @@ export const TripForm = ({ participants, onSubmit }: TripFormProps) => {
     await onSubmit({
       name: name.trim(),
       description: description.trim() || undefined,
-      startDate,
-      endDate,
+      startDate: normalizeDate(startDate),
+      endDate: endDate ? normalizeDate(endDate) : undefined,
       participants: selectedParticipants,
     });
 
@@ -201,10 +204,7 @@ export const TripForm = ({ participants, onSubmit }: TripFormProps) => {
             ) : (
               <div className="max-h-40 overflow-y-auto space-y-2 rounded-lg border p-3">
                 {participants.map((participant) => (
-                  <div
-                    key={participant.id}
-                    className="flex items-center gap-3"
-                  >
+                  <div key={participant.id} className="flex items-center gap-3">
                     <Checkbox
                       id={`participant-${participant.id}`}
                       checked={selectedParticipants.includes(participant.id)}
@@ -226,7 +226,11 @@ export const TripForm = ({ participants, onSubmit }: TripFormProps) => {
             </p>
           </div>
 
-          <Button onClick={handleSubmit} className="w-full" disabled={isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            className="w-full"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
