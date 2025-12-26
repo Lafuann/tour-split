@@ -129,12 +129,12 @@ export const ExpenseTable = ({
                         </Button>
                       </CollapsibleTrigger>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
+                    <TableCell className="font-mono text-sm truncate">
                       {formatDateTime(expense.dateTime)}
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{expense.location}</p>
+                        <p className="font-medium truncate">{expense.location}</p>
                         {expense.description && (
                           <p className="text-xs text-muted-foreground">
                             {expense.description}
@@ -169,7 +169,7 @@ export const ExpenseTable = ({
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`text-sm font-normal px-2 py-0.5 rounded-full ${
+                        className={`text-sm font-normal px-2 py-0.5 rounded-full overflow-hidden truncate ${
                           hasUnequalShares
                             ? "text-white bg-purple-600"
                             : "text-white bg-muted-foreground/50"
