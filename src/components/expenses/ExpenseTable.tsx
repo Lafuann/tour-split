@@ -93,7 +93,7 @@ export const ExpenseTable = ({
           <TableRow className="bg-muted/50">
             <TableHead className="w-10"></TableHead>
             <TableHead>Waktu</TableHead>
-            <TableHead>Tempat</TableHead>
+            <TableHead>Judul</TableHead>
             <TableHead>Dibayar oleh</TableHead>
             <TableHead className="text-right">Total</TableHead>
             <TableHead className="w-16"></TableHead>

@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Participant, Expense, ParticipantShare } from "@/types";
-import { cn, strictTitleCase } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { CalculatorInput } from "../ui/calculator-input";
 
@@ -171,13 +171,13 @@ export const ExpenseForm = ({
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div className="space-y-2">
-            <Label htmlFor="location">Nama Tempat</Label>
+            <Label htmlFor="location">Judul</Label>
             <Input
               id="location"
               placeholder="Contoh: Warung Makan Pak Djo"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              onBlur={(e) => setLocation(strictTitleCase(e.target.value))}
+              onBlur={(e) => setLocation(e.target.value)}
               disabled={isSubmitting}
             />
           </div>
