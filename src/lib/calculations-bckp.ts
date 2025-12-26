@@ -1,94 +1,61 @@
 import { Expense, ParticipantBalance, Settlement, Participant } from "@/types";
 
-/**
- * Validasi data expense
- */
-export const validateExpenses = (expenses: Expense[]) => {
-  expenses.forEach((expense) => {
-    const totalShare = expense.participantShares.reduce(
-      (sum, s) => sum + Number(s.amount),
-      0
-    );
-
-    if (
-      expense.participantShares.length > 0 &&
-      Math.round(totalShare) !== Math.round(expense.totalAmount)
-    ) {
-      console.warn(
-        `[INVALID EXPENSE SHARE]
-Expense ID : ${expense.id}
-Total      : ${expense.totalAmount}
-Share      : ${totalShare}`
-      );
-    }
-  });
-};
-
-/**
- * Hitung saldo per participant (tanpa rounding dini)
- */
 export const calculateBalances = (
   expenses: Expense[],
   participants: Participant[]
 ): ParticipantBalance[] => {
   const balanceMap = new Map<string, { paid: number; owed: number }>();
 
+  // Initialize all participants
   participants.forEach((p) => {
     balanceMap.set(p.id, { paid: 0, owed: 0 });
   });
 
+  // Calculate totals
   expenses.forEach((expense) => {
-    const payer = balanceMap.get(expense.paidById);
-    if (payer) {
-      payer.paid += Number(expense.totalAmount);
+    // Add what the payer paid
+    const payerBalance = balanceMap.get(expense.paidById);
+    if (payerBalance) {
+      payerBalance.paid += expense.totalAmount;
     }
 
-    // Skip kalau share belum ada
-    if (!expense.participantShares?.length) return;
-
+    // Add what each participant owes (using their individual share)
     expense.participantShares.forEach((share) => {
-      const participant = balanceMap.get(share.participantId);
-      if (participant) {
-        participant.owed += Number(share.amount);
+      const participantBalance = balanceMap.get(share.participantId);
+      if (participantBalance) {
+        participantBalance.owed += share.amount;
       }
     });
   });
 
+  // Convert to array
   return participants.map((p) => {
-    const b = balanceMap.get(p.id)!;
-    const balance = b.paid - b.owed;
-
+    const balance = balanceMap.get(p.id) || { paid: 0, owed: 0 };
     return {
       participantId: p.id,
       name: p.name,
-      totalPaid: b.paid,
-      totalOwed: b.owed,
-      balance,
+      totalPaid: balance.paid,
+      totalOwed: balance.owed,
+      balance: balance.paid - balance.owed, // positive = should receive money
     };
   });
 };
 
-/**
- * Hitung settlement (saldo sudah bersih & konsisten)
- */
 export const calculateSettlements = (
   balances: ParticipantBalance[]
 ): Settlement[] => {
   const settlements: Settlement[] = [];
 
+  // Create arrays of debtors and creditors
   const debtors = balances
     .filter((b) => b.balance < 0)
-    .map((b) => ({
-      id: b.participantId,
-      amount: Math.abs(b.balance),
-    }));
+    .map((b) => ({ id: b.participantId, amount: Math.abs(b.balance) }))
+    .sort((a, b) => b.amount - a.amount);
 
   const creditors = balances
     .filter((b) => b.balance > 0)
-    .map((b) => ({
-      id: b.participantId,
-      amount: b.balance,
-    }));
+    .map((b) => ({ id: b.participantId, amount: b.balance }))
+    .sort((a, b) => b.amount - a.amount);
 
   let i = 0;
   let j = 0;
@@ -99,34 +66,32 @@ export const calculateSettlements = (
 
     const amount = Math.min(debtor.amount, creditor.amount);
 
-    if (amount > 0.0001) {
+    if (amount > 0.01) {
+      // Avoid tiny amounts due to floating point
       settlements.push({
         from: debtor.id,
         to: creditor.id,
-        amount,
+        amount: Math.round(amount * 100) / 100,
       });
     }
 
     debtor.amount -= amount;
     creditor.amount -= amount;
 
-    if (debtor.amount < 0.0001) i++;
-    if (creditor.amount < 0.0001) j++;
+    if (debtor.amount < 0.01) i++;
+    if (creditor.amount < 0.01) j++;
   }
 
   return settlements;
 };
 
-/**
- * Formatter (rounding di UI saja)
- */
 export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(Math.round(amount));
+  }).format(amount);
 };
 
 export const formatDateTime = (date: Date): string => {
@@ -134,5 +99,8 @@ export const formatDateTime = (date: Date): string => {
     day: "2-digit",
     month: "short",
     year: "numeric",
+    // hour: "2-digit",
+    // minute: "2-digit",
+    // hour12: false,
   }).format(date);
 };
