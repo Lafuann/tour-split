@@ -128,7 +128,7 @@ export const TripCard = ({
               </p>
             </div>
             <Link to={`/trips/${trip.id}`}>
-              <Button variant="ghost" size="icon" className="ml-2">
+              <Button variant="primary-ghost" size="icon" className="ml-2">
                 <ChevronRight className="h-5 w-5" />
               </Button>
             </Link>
